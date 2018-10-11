@@ -1,0 +1,142 @@
+CREATE SCHEMA `KUVANJE` ;
+
+Create table Sastojak(
+id int auto_increment primary key,
+naziv varchar(20) not null,
+opis varchar (50),
+bkpjm int not null,
+jedinicaMere varchar(20)
+);
+
+Create table Recept(
+id int auto_increment primary key,
+naziv varchar(20) not null,
+opis varchar (50),
+drzavaPorekla int,
+kuvar int
+);
+
+Create table Kuvar(
+id int auto_increment primary key,
+naziv varchar(30) not null,
+godinaIzdavanja int
+);
+
+Create table Drzava(
+id int auto_increment primary key,
+naziv varchar(30) not null
+);
+
+create table SastojakRecept(
+id int auto_increment primary key,
+sastojakId int,
+receptId int,
+constraint fkSastojakId
+foreign key (sastojakId)
+references Sastojak(id),
+constraint fkReceptId
+foreign key (receptId)
+references Recept(id)
+);
+
+alter table Recept
+add constraint fkKuvar
+foreign key (kuvar)
+references Kuvar(id),
+add constraint fkDrzava
+foreign key (drzavaPorekla)
+references Drzava(id);
+
+insert into Drzava(naziv) values('Srbija');
+insert into Drzava(naziv) values('Spanija');
+insert into Drzava(naziv) values('Grcka');
+insert into Drzava(naziv) values('Italija');
+insert into Drzava(naziv) values('Kina');
+insert into Drzava(naziv) values('Francuska');
+
+insert into Kuvar(naziv,godinaIzdavanja) values('Azijska kuhinja', 1990);
+insert into Kuvar(naziv,godinaIzdavanja) values('Srpska jela', 2015);
+insert into Kuvar(naziv,godinaIzdavanja) values('Italijanska kuhinja', 2010);
+insert into Kuvar(naziv,godinaIzdavanja) values('Mediteranska kuhinja', 1995);
+insert into Kuvar(naziv,godinaIzdavanja) values('Grcka kuhinja', 2014);
+
+insert into Sastojak(naziv,bkpjm) values('secuan sos', 150);
+insert into Sastojak(naziv,bkpjm) values('pelat', 220);
+insert into Sastojak(naziv,bkpjm) values('soja sos', 210);
+insert into Sastojak(naziv,bkpjm) values('sampinjoni', 100);
+insert into Sastojak(naziv,bkpjm) values('paprika', 150);
+insert into Sastojak(naziv,bkpjm) values('sir', 250);
+insert into Sastojak(naziv,bkpjm) values('kupus', 50);
+insert into Sastojak(naziv,bkpjm) values('mleveno meso', 300);
+insert into Sastojak(naziv,bkpjm) values('bambus', 160);
+insert into Sastojak(naziv,bkpjm) values('crni luk', 120);
+
+insert into Recept(naziv,drzavaPorekla,Kuvar) values('ajvar', 1,2);
+insert into Recept(naziv,drzavaPorekla,Kuvar) values('spagete', 4,3);
+insert into Recept(naziv,drzavaPorekla,Kuvar) values('sampinjoni sa povrcem', 5,1);
+insert into Recept(naziv,drzavaPorekla,Kuvar) values('pica', 4,3);
+insert into Recept(naziv,drzavaPorekla,Kuvar) values('pariska snicla', 5,4);
+insert into Recept(naziv,drzavaPorekla,Kuvar) values('muckalica', 1,2);
+insert into Recept(naziv,drzavaPorekla,Kuvar) values('grcka salata', 3,5);
+insert into Recept(naziv,drzavaPorekla,Kuvar) values('krem bruleee', 6,4);
+
+insert into SastojakRecept (sastojakId,receptId) values (2,1);
+insert into SastojakRecept (sastojakId,receptId)values (5,1);
+insert into SastojakRecept (sastojakId,receptId)values (10,1);
+insert into SastojakRecept (sastojakId,receptId)values (1,4);
+insert into SastojakRecept (sastojakId,receptId)values (2,4);
+insert into SastojakRecept (sastojakId,receptId)values (3,4);
+insert into SastojakRecept (sastojakId,receptId) values (4,4);
+insert into SastojakRecept (sastojakId,receptId)values (5,4);
+insert into SastojakRecept (sastojakId,receptId)values (6,4);
+insert into SastojakRecept (sastojakId,receptId)values (7,4);
+insert into SastojakRecept (sastojakId,receptId)values (4,3);
+insert into SastojakRecept (sastojakId,receptId)values (7,6);
+insert into SastojakRecept (sastojakId,receptId)values (5,5);
+
+
+1.
+select * from Kuvar
+where godinaIzdavanja <2000 and godinaIzdavanja >1900
+
+2.
+select * from Sastojak
+where bkpjm > 200;
+
+3.
+select * from Recept r
+ join Drzava d
+  on r.drzavaPorekla = d.id
+where d.naziv like 'Srbija';
+
+4.
+select distinct s.* from Sastojak s
+ join SastojakRecept sr
+  on sr.sastojakId = s.id
+ join Recept r
+  on sr.receptId = r.id
+
+5.
+select distinct k.* from Kuvar k
+ join Recept r
+  on r.kuvar = k.id
+ join Drzava d
+  on d.id = r.drzavaporekla
+where d.naziv like 'Italija' or d.naziv like 'francuska'  ;
+
+
+
+
+6.
+select distinct s.* from Sastojak s
+ where s.id in  (select s.id from Sastojak)
+ and s.id not in(select s.id from Sastojak s join SastojakRecept sr on sr.sastojakId = s.id)
+
+Bonus
+select r.* from Recept r
+ join SastojakRecept sr
+  on r.id = sr.receptId
+ join Sastojak s
+  on s.id = sr.sastojakId
+  group by r.id
+  having sum(s.bkpjm)>450;
